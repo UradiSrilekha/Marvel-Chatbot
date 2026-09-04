@@ -9,59 +9,323 @@
   <script src="https://js.puter.com/v2/"></script>
   
   <style>
-    body { 
-      font-family: Arial, sans-serif; 
-      background: #111; 
-      color: #fff; 
-      text-align: center; 
-      margin-top: 50px; 
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
     }
+
+    body { 
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+      background: #06060c; 
+      color: #fff; 
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Moving Grid Background Animation */
+    .bg-grid {
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background-image: 
+        linear-gradient(to right, rgba(255, 77, 77, 0.05) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 77, 77, 0.05) 1px, transparent 1px);
+      background-size: 50px 50px;
+      transform: rotateX(60deg);
+      animation: gridMove 20s linear infinite;
+      z-index: 1;
+    }
+
+    @keyframes gridMove {
+      0% { transform: translateY(0) rotate(0deg); }
+      100% { transform: translateY(50px) rotate(5deg); }
+    }
+
+    /* Floating Particles Canvas */
+    #particles-canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    /* Main UI Container */
+    .app-container {
+      position: relative;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      max-width: 600px;
+      padding: 20px;
+    }
+
+    /* Robot Container Styling */
+    .robot-container {
+      position: relative;
+      width: 140px;
+      height: 140px;
+      margin-bottom: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Robot Head */
+    .robot-head {
+      position: relative;
+      width: 100px;
+      height: 80px;
+      background: linear-gradient(145deg, #1e1e2f, #11111d);
+      border: 3px solid #ff4d4d;
+      border-radius: 20px;
+      box-shadow: 0 0 25px rgba(255, 77, 77, 0.4);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      padding: 0 15px;
+      transition: all 0.3s ease;
+    }
+
+    /* Robot Antenna */
+    .robot-antenna {
+      position: absolute;
+      top: -20px;
+      width: 6px;
+      height: 20px;
+      background: #ff4d4d;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    .robot-antenna::after {
+      content: '';
+      position: absolute;
+      top: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 14px;
+      height: 14px;
+      background: #ff4d4d;
+      border-radius: 50%;
+      box-shadow: 0 0 10px #ff4d4d;
+    }
+
+    /* Robot Eyes */
+    .robot-eye {
+      width: 22px;
+      height: 22px;
+      background: #00f0ff;
+      border-radius: 50%;
+      box-shadow: 0 0 12px #00f0ff;
+      transition: transform 0.2s ease, background 0.3s ease;
+    }
+
+    /* Robot Mouth / Soundwave Visualizer */
+    .robot-mouth {
+      position: absolute;
+      bottom: 12px;
+      width: 40px;
+      height: 6px;
+      background: #ff4d4d;
+      border-radius: 4px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 2px;
+      overflow: hidden;
+    }
+
+    .wave-bar {
+      width: 4px;
+      height: 100%;
+      background: #fff;
+      border-radius: 2px;
+    }
+
+    /* Active Speaking Animations */
+    .speaking .robot-head {
+      box-shadow: 0 0 40px rgba(255, 77, 77, 0.9);
+      animation: float 2s infinite ease-in-out;
+    }
+
+    .speaking .robot-eye {
+      background: #ff4d4d;
+      box-shadow: 0 0 15px #ff4d4d;
+    }
+
+    .speaking .wave-bar {
+      animation: wave 0.5s infinite alternate ease-in-out;
+    }
+
+    .speaking .wave-bar:nth-child(2) { animation-delay: 0.15s; }
+    .speaking .wave-bar:nth-child(3) { animation-delay: 0.3s; }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-12px); }
+    }
+
+    @keyframes wave {
+      0% { height: 20%; }
+      100% { height: 100%; }
+    }
+
+    /* Typography & Layout Elements */
+    h1 {
+      font-size: 2.5rem;
+      letter-spacing: 3px;
+      margin-bottom: 5px;
+      text-transform: uppercase;
+      background: linear-gradient(90deg, #ff4d4d, #4da6ff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-shadow: 0 0 20px rgba(255, 77, 77, 0.3);
+    }
+
     #status { 
-      color: #888; 
+      color: #aaa; 
       font-style: italic; 
       margin-bottom: 20px; 
+      font-size: 0.95rem;
     }
+
     #chat-box { 
-      max-width: 500px; 
-      margin: 0 auto; 
+      width: 100%;
       text-align: left; 
-      background: #222; 
+      background: rgba(18, 18, 28, 0.75); 
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
       padding: 20px; 
-      border-radius: 8px; 
-      min-height: 200px; 
-      max-height: 400px;
+      border-radius: 16px; 
+      min-height: 220px; 
+      max-height: 380px;
       overflow-y: auto;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+      margin-top: 20px;
     }
+
     .user { 
       color: #4da6ff; 
-      margin-bottom: 10px; 
+      margin-bottom: 12px; 
+      line-height: 1.4;
     }
+
     .marvel { 
       color: #ff4d4d; 
-      margin-bottom: 10px; 
+      margin-bottom: 12px; 
+      line-height: 1.4;
     }
+
     button { 
-      padding: 12px 24px; 
+      padding: 14px 32px; 
       font-size: 16px; 
       cursor: pointer; 
       border: none; 
-      border-radius: 4px; 
-      background: #ff4d4d; 
+      border-radius: 30px; 
+      background: linear-gradient(135deg, #ff4d4d, #cc0000); 
       color: white; 
       font-weight: bold; 
+      box-shadow: 0 4px 20px rgba(255, 77, 77, 0.5);
+      transition: all 0.3s ease;
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 25px rgba(255, 77, 77, 0.8);
+    }
+
+    button:active {
+      transform: translateY(1px);
     }
   </style>
 </head>
 <body>
 
-  <h1>Marvel AI</h1>
-  <div id="status">Click "Start Marvel" to speak.</div>
-  
-  <button id="toggle-btn" onclick="toggleListening()">Start Marvel</button>
+  <!-- Moving Background Elements -->
+  <div class="bg-grid"></div>
+  <canvas id="particles-canvas"></canvas>
 
-  <div id="chat-box" style="margin-top: 20px;"></div>
+  <div class="app-container">
+    <!-- Robot Avatar -->
+    <div class="robot-container" id="robot">
+      <div class="robot-antenna"></div>
+      <div class="robot-head">
+        <div class="robot-eye"></div>
+        <div class="robot-eye"></div>
+        <div class="robot-mouth">
+          <div class="wave-bar"></div>
+          <div class="wave-bar"></div>
+          <div class="wave-bar"></div>
+        </div>
+      </div>
+    </div>
+
+    <h1>Marvel AI</h1>
+    <div id="status">Click "Start Marvel" to speak.</div>
+    
+    <button id="toggle-btn" onclick="toggleListening()">Start Marvel</button>
+
+    <div id="chat-box"></div>
+  </div>
 
   <script>
+    // Particle Animation Background
+    const canvas = document.getElementById("particles-canvas");
+    const ctx = canvas.getContext("2d");
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.addEventListener("resize", resizeCanvas);
+    resizeCanvas();
+
+    const particles = Array.from({ length: 40 }, () => ({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      radius: Math.random() * 2 + 1,
+      dx: (Math.random() - 0.5) * 0.8,
+      dy: (Math.random() - 0.5) * 0.8,
+      alpha: Math.random()
+    }));
+
+    function animateParticles() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      particles.forEach(p => {
+        p.x += p.dx;
+        p.y += p.dy;
+
+        if (p.x < 0 || p.x > canvas.width) p.dx *= -1;
+        if (p.y < 0 || p.y > canvas.height) p.dy *= -1;
+
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255, 77, 77, ${p.alpha})`;
+        ctx.shadowBlur = 8;
+        ctx.shadowColor = "#ff4d4d";
+        ctx.fill();
+      });
+
+      requestAnimationFrame(animateParticles);
+    }
+    animateParticles();
+
+    // Voice Chat Logic
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
     let recognition = null;
@@ -71,6 +335,7 @@
     const statusEl = document.getElementById("status");
     const chatBox = document.getElementById("chat-box");
     const toggleBtn = document.getElementById("toggle-btn");
+    const robotEl = document.getElementById("robot");
 
     if (SpeechRecognition) {
       recognition = new SpeechRecognition();
@@ -95,6 +360,7 @@
         statusEl.innerText = `Error: ${event.error}`;
         isListening = false;
         toggleBtn.innerText = "Start Marvel";
+        robotEl.classList.remove("speaking");
       };
 
       recognition.onend = () => {
@@ -111,6 +377,7 @@
         recognition.stop();
         statusEl.innerText = "Stopped listening.";
         toggleBtn.innerText = "Start Marvel";
+        robotEl.classList.remove("speaking");
       } else {
         try {
           recognition.start();
@@ -125,7 +392,6 @@
       toggleBtn.innerText = "Thinking...";
 
       try {
-        // Send speech input to the AI model
         const systemPrompt = "You are Marvel, a helpful and concise AI assistant. Keep responses under 2-3 short sentences so they sound natural when spoken out loud.";
         const response = await puter.ai.chat(`${systemPrompt}\nUser says: ${text}`);
         
@@ -152,6 +418,7 @@
     function speak(text) {
       statusEl.innerText = "Marvel is speaking...";
       toggleBtn.innerText = "Speaking...";
+      robotEl.classList.add("speaking");
 
       if (currentAudio) {
         currentAudio.pause();
@@ -189,6 +456,7 @@
     function resetControls() {
       statusEl.innerText = "Click button to speak again.";
       toggleBtn.innerText = "Start Marvel";
+      robotEl.classList.remove("speaking");
     }
   </script>
 </body>

@@ -28,8 +28,16 @@ This project uses **React.js** for the frontend and integrates conversational lo
 - **Frontend:** React.js  
 - **Logic:** JavaScript (chat handling, response mapping)  
 - **Styling:** CSS  
-- **Deployment:** Vercel  
+- **Deployment:** Vercel
 
+- 
+## 🌍 Browser Compatibility
+The chatbot has been tested and works best on:
+- **Google Chrome**  
+- **Microsoft Edge**  
+- **Safari**
+
+⚠️ Other browsers may not fully support all features.
 ---
 
 ## 🧩 How It Works

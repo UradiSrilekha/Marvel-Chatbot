@@ -4,25 +4,180 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Marvel - Voice Chatbot</title>
+  
+  <!-- Free Cloud AI TTS Engine Library -->
+  <script src="https://js.puter.com/v2/"></script>
+  
   <style>
-    body { font-family: Arial, sans-serif; background: #111; color: #fff; text-align: center; margin-top: 50px; }
-    #status { color: #888; font-style: italic; margin-bottom: 20px; }
-    #chat-box { max-width: 500px; margin: 0 auto; text-align: left; background: #222; padding: 20px; border-radius: 8px; min-height: 200px; }
-    .user { color: #4da6ff; margin-bottom: 10px; }
-    .marvel { color: #ff4d4d; margin-bottom: 10px; }
-    button { padding: 12px 24px; font-size: 16px; cursor: pointer; border: none; border-radius: 4px; background: #ff4d4d; color: white; font-weight: bold; }
-    button:disabled { background: #555; cursor: not-allowed; }
+    body { 
+      font-family: Arial, sans-serif; 
+      background: #111; 
+      color: #fff; 
+      text-align: center; 
+      margin-top: 50px; 
+    }
+    #status { 
+      color: #888; 
+      font-style: italic; 
+      margin-bottom: 20px; 
+    }
+    #chat-box { 
+      max-width: 500px; 
+      margin: 0 auto; 
+      text-align: left; 
+      background: #222; 
+      padding: 20px; 
+      border-radius: 8px; 
+      min-height: 200px; 
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    .user { 
+      color: #4da6ff; 
+      margin-bottom: 10px; 
+    }
+    .marvel { 
+      color: #ff4d4d; 
+      margin-bottom: 10px; 
+    }
+    button { 
+      padding: 12px 24px; 
+      font-size: 16px; 
+      cursor: pointer; 
+      border: none; 
+      border-radius: 4px; 
+      background: #ff4d4d; 
+      color: white; 
+      font-weight: bold; 
+    }
+    button:disabled {
+      background: #555;
+      cursor: not-allowed;
+    }
   </style>
 </head>
 <body>
 
   <h1>Marvel AI</h1>
-  <div id="status">Click "Start Marvel" to begin talking.</div>
+  <div id="status">Click "Start Marvel" to speak.</div>
   
   <button id="toggle-btn" onclick="toggleListening()">Start Marvel</button>
 
   <div id="chat-box" style="margin-top: 20px;"></div>
 
-  <script src="script.js"></script>
+  <script>
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    let recognition = null;
+    let isListening = false;
+    let currentAudio = null;
+
+    const statusEl = document.getElementById("status");
+    const chatBox = document.getElementById("chat-box");
+    const toggleBtn = document.getElementById("toggle-btn");
+
+    if (SpeechRecognition) {
+      recognition = new SpeechRecognition();
+      recognition.continuous = false;
+      recognition.interimResults = false;
+      recognition.lang = "en-US";
+
+      recognition.onstart = () => {
+        isListening = true;
+        statusEl.innerText = "Marvel is listening...";
+        toggleBtn.innerText = "Stop Marvel";
+      };
+
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        appendMessage("You", transcript, "user");
+        processUserInput(transcript);
+      };
+
+      recognition.onerror = (event) => {
+        console.error("Speech Recognition Error:", event.error);
+        statusEl.innerText = `Error: ${event.error}`;
+        isListening = false;
+        toggleBtn.innerText = "Start Marvel";
+      };
+
+      recognition.onend = () => {
+        isListening = false;
+      };
+    } else {
+      alert("Speech recognition is not supported in this browser. Please use Google Chrome, Microsoft Edge, or Safari.");
+    }
+
+    function toggleListening() {
+      if (!recognition) return;
+      
+      if (isListening) {
+        recognition.stop();
+        statusEl.innerText = "Stopped listening.";
+        toggleBtn.innerText = "Start Marvel";
+      } else {
+        try {
+          recognition.start();
+        } catch (e) {
+          console.warn("Recognition already active", e);
+        }
+      }
+    }
+
+    function processUserInput(text) {
+      const query = text.toLowerCase();
+      let response = "I heard you clearly, but I am not trained to answer that yet.";
+
+      if (query.includes("hello") || query.includes("hi")) {
+        response = "Hello there! I am Marvel. How can I help you?";
+      } else if (query.includes("your name")) {
+        response = "My name is Marvel, your voice assistant.";
+      } else if (query.includes("how are you")) {
+        response = "I am operating perfectly and ready to assist you!";
+      } else if (query.includes("bye") || query.includes("stop")) {
+        response = "Goodbye! Press the button anytime you want to speak again.";
+      }
+
+      appendMessage("Marvel", response, "marvel");
+      speakWithFreeModel(response);
+    }
+
+    function appendMessage(sender, text, className) {
+      const p = document.createElement("p");
+      p.className = className;
+      p.innerHTML = `<strong>${sender}:</strong> ${text}`;
+      chatBox.appendChild(p);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    async function speakWithFreeModel(text) {
+      try {
+        statusEl.innerText = "Marvel is speaking...";
+        toggleBtn.innerText = "Speaking...";
+        
+        // Cancel any active speech output before starting new utterance
+        if (currentAudio) {
+          currentAudio.pause();
+        }
+
+        // Call Puter.js free Cloud AI Text-to-Speech Engine
+        currentAudio = await puter.ai.txt2speech(text, {
+          engine: "neural",
+          language: "en-US"
+        });
+
+        currentAudio.play();
+
+        currentAudio.onended = () => {
+          statusEl.innerText = "Click button to speak again.";
+          toggleBtn.innerText = "Start Marvel";
+        };
+      } catch (error) {
+        console.error("Cloud Voice Error:", error);
+        statusEl.innerText = "Voice error. Click to try again.";
+        toggleBtn.innerText = "Start Marvel";
+      }
+    }
+  </script>
 </body>
 </html>

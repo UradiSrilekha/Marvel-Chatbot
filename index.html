@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Marvel - Voice Chatbot</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #111; color: #fff; text-align: center; margin-top: 50px; }
+    #status { color: #888; font-style: italic; margin-bottom: 20px; }
+    #chat-box { max-width: 500px; margin: 0 auto; text-align: left; background: #222; padding: 20px; border-radius: 8px; min-height: 200px; }
+    .user { color: #4da6ff; margin-bottom: 10px; }
+    .marvel { color: #ff4d4d; margin-bottom: 10px; }
+    button { padding: 12px 24px; font-size: 16px; cursor: pointer; border: none; border-radius: 4px; background: #ff4d4d; color: white; font-weight: bold; }
+    button:disabled { background: #555; cursor: not-allowed; }
+  </style>
+</head>
+<body>
+
+  <h1>Marvel AI</h1>
+  <div id="status">Click "Start Marvel" to begin talking.</div>
+  
+  <button id="toggle-btn" onclick="toggleListening()">Start Marvel</button>
+
+  <div id="chat-box" style="margin-top: 20px;"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>

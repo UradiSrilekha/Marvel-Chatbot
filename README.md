@@ -50,5 +50,4 @@ function getBotResponse(input) {
   const key = input.toLowerCase();
   return responses[key] || "I’m still learning about that hero!";
 }
-📸 Screenshots
-file:///C:/Users/balak/OneDrive/Pictures/Marvel%20cahhtbot.png
+

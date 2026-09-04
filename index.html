@@ -5,9 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Marvel - Voice Chatbot</title>
   
-  <!-- Free Cloud AI TTS Engine Library -->
-  <script src="https://js.puter.com/v2/"></script>
-  
   <style>
     body { 
       font-family: Arial, sans-serif; 
@@ -49,10 +46,6 @@
       background: #ff4d4d; 
       color: white; 
       font-weight: bold; 
-    }
-    button:disabled {
-      background: #555;
-      cursor: not-allowed;
     }
   </style>
 </head>
@@ -139,7 +132,7 @@
       }
 
       appendMessage("Marvel", response, "marvel");
-      speakWithFreeModel(response);
+      speak(response);
     }
 
     function appendMessage(sender, text, className) {
@@ -150,33 +143,48 @@
       chatBox.scrollTop = chatBox.scrollHeight;
     }
 
-    async function speakWithFreeModel(text) {
-      try {
-        statusEl.innerText = "Marvel is speaking...";
-        toggleBtn.innerText = "Speaking...";
-        
-        // Cancel any active speech output before starting new utterance
-        if (currentAudio) {
-          currentAudio.pause();
-        }
+    function speak(text) {
+      statusEl.innerText = "Marvel is speaking...";
+      toggleBtn.innerText = "Speaking...";
 
-        // Call Puter.js free Cloud AI Text-to-Speech Engine
-        currentAudio = await puter.ai.txt2speech(text, {
-          engine: "neural",
-          language: "en-US"
-        });
-
-        currentAudio.play();
-
-        currentAudio.onended = () => {
-          statusEl.innerText = "Click button to speak again.";
-          toggleBtn.innerText = "Start Marvel";
-        };
-      } catch (error) {
-        console.error("Cloud Voice Error:", error);
-        statusEl.innerText = "Voice error. Click to try again.";
-        toggleBtn.innerText = "Start Marvel";
+      // Stop any current playing audio
+      if (currentAudio) {
+        currentAudio.pause();
       }
+
+      // Method 1: Free Online Voice Stream API
+      const encodedText = encodeURIComponent(text);
+      const audioUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodedText}&tl=en&client=tw-ob`;
+      
+      currentAudio = new Audio(audioUrl);
+
+      currentAudio.play().then(() => {
+        currentAudio.onended = resetControls;
+      }).catch((err) => {
+        console.warn("Online TTS Stream blocked. Switching to Web Speech API fallback...", err);
+        fallbackToNativeTTS(text);
+      });
+    }
+
+    function fallbackToNativeTTS(text) {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.rate = 1.0;
+        utterance.pitch = 1.0;
+        
+        utterance.onend = resetControls;
+        utterance.onerror = resetControls;
+
+        window.speechSynthesis.speak(utterance);
+      } else {
+        resetControls();
+      }
+    }
+
+    function resetControls() {
+      statusEl.innerText = "Click button to speak again.";
+      toggleBtn.innerText = "Start Marvel";
     }
   </script>
 </body>

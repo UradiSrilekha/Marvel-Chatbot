@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Marvel - Voice Chatbot</title>
   
+  <!-- Free Keyless AI Model Engine (Puter.js) -->
+  <script src="https://js.puter.com/v2/"></script>
+  
   <style>
     body { 
       font-family: Arial, sans-serif; 
@@ -117,22 +120,25 @@
       }
     }
 
-    function processUserInput(text) {
-      const query = text.toLowerCase();
-      let response = "I heard you clearly, but I am not trained to answer that yet.";
+    async function processUserInput(text) {
+      statusEl.innerText = "Marvel is thinking...";
+      toggleBtn.innerText = "Thinking...";
 
-      if (query.includes("hello") || query.includes("hi")) {
-        response = "Hello there! I am Marvel. How can I help you?";
-      } else if (query.includes("your name")) {
-        response = "My name is Marvel, your voice assistant.";
-      } else if (query.includes("how are you")) {
-        response = "I am operating perfectly and ready to assist you!";
-      } else if (query.includes("bye") || query.includes("stop")) {
-        response = "Goodbye! Press the button anytime you want to speak again.";
+      try {
+        // Send speech input to the AI model
+        const systemPrompt = "You are Marvel, a helpful and concise AI assistant. Keep responses under 2-3 short sentences so they sound natural when spoken out loud.";
+        const response = await puter.ai.chat(`${systemPrompt}\nUser says: ${text}`);
+        
+        const replyText = response.toString().trim();
+
+        appendMessage("Marvel", replyText, "marvel");
+        speak(replyText);
+      } catch (error) {
+        console.error("AI Error:", error);
+        const fallbackText = "Sorry, I had trouble thinking of an answer. Please try asking again.";
+        appendMessage("Marvel", fallbackText, "marvel");
+        speak(fallbackText);
       }
-
-      appendMessage("Marvel", response, "marvel");
-      speak(response);
     }
 
     function appendMessage(sender, text, className) {
@@ -147,12 +153,10 @@
       statusEl.innerText = "Marvel is speaking...";
       toggleBtn.innerText = "Speaking...";
 
-      // Stop any current playing audio
       if (currentAudio) {
         currentAudio.pause();
       }
 
-      // Method 1: Free Online Voice Stream API
       const encodedText = encodeURIComponent(text);
       const audioUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodedText}&tl=en&client=tw-ob`;
       
